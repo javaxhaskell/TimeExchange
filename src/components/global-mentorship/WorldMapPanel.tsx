@@ -243,8 +243,12 @@ export function WorldMapPanel() {
         style={{ width: "100%", height: "100%", display: "block" }}
       >
         <Geographies geography={GEO_URL}>
-          {({ geographies }) =>
-            geographies.map((geo) => (
+          {({
+            geographies,
+          }: {
+            geographies: Array<{ rsmKey: string } & Record<string, unknown>>;
+          }) =>
+            geographies.map((geo: { rsmKey: string } & Record<string, unknown>) => (
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
