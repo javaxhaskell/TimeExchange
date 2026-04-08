@@ -53,7 +53,7 @@ export function MentorsTable() {
     sortDirection,
     setSort,
   } = useMarketStore();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   const filteredListings = useMemo(
@@ -225,7 +225,12 @@ export function MentorsTable() {
                         ? "bg-emerald-600 text-white hover:bg-emerald-500 hover:shadow-emerald-500/25"
                         : "bg-primary text-primary-foreground hover:bg-primary/80 hover:shadow-primary/20"
                     )}
+                    disabled={loading}
                     onClick={() => {
+                      if (loading) {
+                        return;
+                      }
+
                       if (!user) {
                         router.push("/login?redirect=/");
                         return;

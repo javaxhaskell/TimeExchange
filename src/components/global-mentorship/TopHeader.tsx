@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 
 export function TopHeader() {
   const { searchQuery, setSearchQuery } = useMarketStore();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   return (
@@ -51,9 +51,16 @@ export function TopHeader() {
             size="icon"
             className="h-10 w-10 rounded-[1rem] border border-white/8 bg-white/[0.045] text-foreground transition-all duration-200 hover:bg-white/[0.09] hover:border-primary/30 hover:scale-105 hover:shadow-[0_0_14px_rgba(133,237,181,0.12)]"
             onClick={() => {
-              if (!user) {
-                router.push("/login?redirect=/");
+              if (loading) {
+                return;
               }
+
+              if (!user) {
+                router.push("/login?redirect=/account");
+                return;
+              }
+
+              router.push("/account");
             }}
           >
             <User className="h-4 w-4" />
