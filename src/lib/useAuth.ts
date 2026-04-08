@@ -10,11 +10,30 @@ export function useAuth() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
+    let isMounted = true;
 
     async function init() {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-      setLoading(false);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setUser(session?.user ?? null);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setUser(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
     init();
 
@@ -22,11 +41,19 @@ export function useAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
+        if (!isMounted) {
+          return;
+        }
+
         setUser(session?.user ?? null);
+        setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { user, loading };

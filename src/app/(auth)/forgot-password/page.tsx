@@ -2,7 +2,10 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { buildAuthCallbackUrl } from "@/lib/auth/redirect"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 const dots: { x: number; y: number; c: number }[] = [
   { x: 169, y: 129, c: 0 },
@@ -43,7 +46,30 @@ function getDotMotion(i: number) {
 }
 
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("")
   const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    const supabase = createSupabaseBrowserClient()
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: buildAuthCallbackUrl(window.location.origin, "/update-password"),
+    })
+
+    if (resetError) {
+      setError(resetError.message)
+      setLoading(false)
+      return
+    }
+
+    setSent(true)
+    setLoading(false)
+  }
 
   return (
     <div
@@ -125,37 +151,57 @@ export default function ForgotPasswordPage() {
                 <br />a reset link within seconds.
               </p>
 
-              <div className="mt-7 flex flex-col gap-[10px]">
-                <label
-                  className="text-[10px] font-medium tracking-[0.4px] uppercase"
-                  style={{ color: "rgba(128,143,158,0.65)" }}
-                >
-                  Email address
-                </label>
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full h-11 rounded-[14px] px-4 text-[13px] outline-none transition-colors"
+              {/* Error message */}
+              {error && (
+                <div
+                  className="mt-4 rounded-[12px] px-4 py-3 text-[12px]"
                   style={{
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "#ebf0f5",
+                    backgroundColor: "rgba(239,68,68,0.1)",
+                    border: "1px solid rgba(239,68,68,0.2)",
+                    color: "rgba(252,165,165,0.9)",
                   }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(133,237,181,0.4)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
-                />
-              </div>
+                >
+                  {error}
+                </div>
+              )}
 
-              <motion.button
-                onClick={() => setSent(true)}
-                className="mt-5 w-full h-12 rounded-[14px] text-[14px] font-semibold"
-                style={{ backgroundColor: "#85edb5", color: "#08111a" }}
-                whileHover={{ opacity: 0.92, scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-              >
-                Send reset link
-              </motion.button>
+              <form onSubmit={handleReset}>
+                <div className="mt-7 flex flex-col gap-[10px]">
+                  <label
+                    className="text-[10px] font-medium tracking-[0.4px] uppercase"
+                    style={{ color: "rgba(128,143,158,0.65)" }}
+                  >
+                    Email address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-11 rounded-[14px] px-4 text-[13px] outline-none transition-colors"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "#ebf0f5",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(133,237,181,0.4)")}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                </div>
+
+                <motion.button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-5 w-full h-12 rounded-[14px] text-[14px] font-semibold flex items-center justify-center gap-2 disabled:opacity-70"
+                  style={{ backgroundColor: "#85edb5", color: "#08111a" }}
+                  whileHover={loading ? {} : { opacity: 0.92, scale: 1.01 }}
+                  whileTap={loading ? {} : { scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send reset link"}
+                </motion.button>
+              </form>
             </motion.div>
           ) : (
             <motion.div

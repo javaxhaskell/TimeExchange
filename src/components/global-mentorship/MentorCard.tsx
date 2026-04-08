@@ -27,7 +27,7 @@ interface MentorCardProps {
 }
 
 export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const status = getListingStatusMeta(mentor);
   const accessModes = getAccessModes(mentor);
@@ -231,8 +231,13 @@ export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
                 ? "bg-emerald-600 text-white hover:bg-emerald-500 hover:shadow-emerald-500/25"
                 : "bg-primary text-primary-foreground hover:bg-primary/80 hover:shadow-primary/20"
             )}
+            disabled={loading}
             onClick={(e) => {
               e.stopPropagation();
+              if (loading) {
+                return;
+              }
+
               if (!user) {
                 router.push("/login?redirect=/");
                 return;

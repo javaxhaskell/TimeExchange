@@ -1,10 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { BrandPanel } from "@/components/auth/BrandPanel"
+import { getPostAuthRedirectPath, buildAuthCallbackUrl } from "@/lib/auth/redirect"
+import { getAuthErrorMessage } from "@/lib/auth/messages"
+import { useAuth } from "@/lib/useAuth"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 const GoogleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -22,8 +27,87 @@ const LinkedInIcon = () => (
   </svg>
 )
 
-export default function LoginPage() {
+function LoginPageFallback() {
+  return (
+    <div className="flex h-screen" style={{ backgroundColor: "#08111a" }}>
+      <BrandPanel />
+      <div className="flex-1" style={{ backgroundColor: "#0a141e" }} />
+    </div>
+  )
+}
+
+function LoginPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = getPostAuthRedirectPath(searchParams.get("redirect"), "/")
+  const { user, loading: authLoading } = useAuth()
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [oauthLoadingProvider, setOauthLoadingProvider] = useState<
+    "google" | "linkedin_oidc" | null
+  >(null)
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "auth_callback_failed"
+      ? "Authentication failed. Please try again."
+      : null
+  )
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(redirectTo)
+      router.refresh()
+    }
+  }, [authLoading, redirectTo, router, user])
+
+  async function handleSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+
+      if (signInError) {
+        setError(getAuthErrorMessage(signInError))
+        setLoading(false)
+        return
+      }
+
+      router.replace(redirectTo)
+      router.refresh()
+    } catch (authError) {
+      setError(getAuthErrorMessage(authError))
+      setLoading(false)
+    }
+  }
+
+  async function handleOAuth(provider: "google" | "linkedin_oidc") {
+    setError(null)
+    setOauthLoadingProvider(provider)
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: buildAuthCallbackUrl(window.location.origin, redirectTo),
+        },
+      })
+      if (oauthError) {
+        setError(getAuthErrorMessage(oauthError))
+        setOauthLoadingProvider(null)
+      }
+    } catch (authError) {
+      setError(getAuthErrorMessage(authError))
+      setOauthLoadingProvider(null)
+    }
+  }
 
   return (
     <div className="flex h-screen" style={{ backgroundColor: "#08111a" }}>
@@ -58,51 +142,38 @@ export default function LoginPage() {
             Sign in to your account
           </p>
 
-          <div className="mt-8 flex flex-col gap-5">
-            {/* Email */}
-            <div className="flex flex-col gap-[10px]">
-              <label
-                className="text-[10px] font-medium tracking-[0.4px] uppercase"
-                style={{ color: "rgba(128,143,158,0.65)" }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="w-full h-11 rounded-[14px] px-4 text-[13px] outline-none transition-colors"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#ebf0f5",
-                }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(133,237,181,0.4)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
-              />
+          {/* Error message */}
+          {error && (
+            <div
+              className="mt-4 rounded-[12px] px-4 py-3 text-[12px]"
+              style={{
+                backgroundColor: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "rgba(252,165,165,0.9)",
+              }}
+            >
+              {error}
             </div>
+          )}
 
-            {/* Password */}
-            <div className="flex flex-col gap-[10px]">
-              <div className="flex items-center justify-between">
+          <form onSubmit={handleSignIn}>
+            <div className="mt-8 flex flex-col gap-5">
+              {/* Email */}
+              <div className="flex flex-col gap-[10px]">
                 <label
                   className="text-[10px] font-medium tracking-[0.4px] uppercase"
                   style={{ color: "rgba(128,143,158,0.65)" }}
                 >
-                  Password
+                  Email
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-[12px] font-medium transition-opacity hover:opacity-100"
-                  style={{ color: "rgba(133,237,181,0.9)" }}
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••••••"
-                  className="w-full h-11 rounded-[14px] px-4 pr-11 text-[13px] outline-none transition-colors"
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-11 rounded-[14px] px-4 text-[13px] outline-none transition-colors"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(255,255,255,0.1)",
@@ -111,28 +182,67 @@ export default function LoginPage() {
                   onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(133,237,181,0.4)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-100"
-                  style={{ color: "rgba(128,143,158,0.5)" }}
-                >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col gap-[10px]">
+                <div className="flex items-center justify-between">
+                  <label
+                    className="text-[10px] font-medium tracking-[0.4px] uppercase"
+                    style={{ color: "rgba(128,143,158,0.65)" }}
+                  >
+                    Password
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-[12px] font-medium transition-opacity hover:opacity-100"
+                    style={{ color: "rgba(133,237,181,0.9)" }}
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    placeholder="••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full h-11 rounded-[14px] px-4 pr-11 text-[13px] outline-none transition-colors"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "#ebf0f5",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(133,237,181,0.4)")}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-100"
+                    style={{ color: "rgba(128,143,158,0.5)" }}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Sign in button */}
-          <motion.button
-            className="mt-7 w-full h-12 rounded-[14px] text-[14px] font-semibold"
-            style={{ backgroundColor: "#85edb5", color: "#08111a" }}
-            whileHover={{ opacity: 0.92, scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-          >
-            Sign in
-          </motion.button>
+            {/* Sign in button */}
+            <motion.button
+              type="submit"
+              disabled={loading || authLoading || oauthLoadingProvider !== null}
+              className="mt-7 w-full h-12 rounded-[14px] text-[14px] font-semibold flex items-center justify-center gap-2 disabled:opacity-70"
+              style={{ backgroundColor: "#85edb5", color: "#08111a" }}
+              whileHover={loading ? {} : { opacity: 0.92, scale: 1.01 }}
+              whileTap={loading ? {} : { scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+            </motion.button>
+          </form>
 
           {/* Divider */}
           <div className="mt-6 flex items-center gap-3">
@@ -144,11 +254,14 @@ export default function LoginPage() {
           {/* OAuth buttons */}
           <div className="mt-4 grid grid-cols-2 gap-3">
             {[
-              { icon: <GoogleIcon />, label: "Continue with Google" },
-              { icon: <LinkedInIcon />, label: "Continue with LinkedIn" },
-            ].map(({ icon, label }) => (
+              { icon: <GoogleIcon />, label: "Continue with Google", provider: "google" as const },
+              { icon: <LinkedInIcon />, label: "Continue with LinkedIn", provider: "linkedin_oidc" as const },
+            ].map(({ icon, label, provider }) => (
               <motion.button
                 key={label}
+                type="button"
+                onClick={() => handleOAuth(provider)}
+                disabled={loading || authLoading || oauthLoadingProvider !== null}
                 className="flex items-center justify-center gap-2 h-11 rounded-[14px] text-[12px] font-medium"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.04)",
@@ -160,7 +273,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.15 }}
               >
                 {icon}
-                {label}
+                {oauthLoadingProvider === provider ? "Connecting..." : label}
               </motion.button>
             ))}
           </div>
@@ -169,7 +282,7 @@ export default function LoginPage() {
           <p className="mt-6 text-center text-[12px]" style={{ color: "rgba(128,143,158,0.55)" }}>
             New to TimeExchange?{" "}
             <Link
-              href="/signup"
+              href={`/signup?redirect=${encodeURIComponent(redirectTo)}`}
               className="font-medium transition-opacity hover:opacity-100"
               style={{ color: "rgba(133,237,181,0.9)" }}
             >
@@ -179,5 +292,13 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
