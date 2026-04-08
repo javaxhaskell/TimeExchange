@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { CATEGORY_LABELS, getRegionDefinitionById, type ExpertListing } from "@/lib/mock-data";
+import { useAuth } from "@/lib/useAuth";
 import {
   formatHourlyRate,
   getListingStatusMeta,
@@ -51,6 +53,8 @@ export function MentorsTable() {
     sortDirection,
     setSort,
   } = useMarketStore();
+  const { user } = useAuth();
+  const router = useRouter();
 
   const filteredListings = useMemo(
     () =>
@@ -216,11 +220,17 @@ export function MentorsTable() {
                   <Button
                     size="sm"
                     className={cn(
-                      "h-8 rounded-2xl px-3 text-xs opacity-0 transition-opacity group-hover:opacity-100",
+                      "h-8 rounded-2xl px-3 text-xs opacity-0 transition-all duration-200 group-hover:opacity-100 hover:scale-105 hover:shadow-lg",
                       mentor.availabilityStatus === "live"
-                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                        ? "bg-emerald-600 text-white hover:bg-emerald-500 hover:shadow-emerald-500/25"
+                        : "bg-primary text-primary-foreground hover:bg-primary/80 hover:shadow-primary/20"
                     )}
+                    onClick={() => {
+                      if (!user) {
+                        router.push("/login?redirect=/");
+                        return;
+                      }
+                    }}
                   >
                     {mentor.availabilityStatus === "live" ? "Match" : "Forward"}
                     <ArrowUpRight className="h-3.5 w-3.5" />

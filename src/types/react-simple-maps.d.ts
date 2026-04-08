@@ -1,11 +1,13 @@
 declare module "react-simple-maps" {
   import type { ComponentType } from "react";
 
-  export const ComposableMap: ComponentType<any>;
-  export const Geographies: ComponentType<any>;
-  export const Geography: ComponentType<any>;
-  export const Marker: ComponentType<any>;
-  export const ZoomableGroup: ComponentType<any>;
-  export const Sphere: ComponentType<any>;
-  export const Graticule: ComponentType<any>;
+  type LooseProps = Record<string, unknown>;
+
+  export const ComposableMap: ComponentType<LooseProps>;
+  export const Geographies: ComponentType<LooseProps>;
+  export const Geography: ComponentType<LooseProps>;
+  export const Marker: ComponentType<LooseProps>;
+  export const ZoomableGroup: ComponentType<LooseProps>;
+  export const Sphere: ComponentType<LooseProps>;
+  export const Graticule: ComponentType<LooseProps>;
 }
