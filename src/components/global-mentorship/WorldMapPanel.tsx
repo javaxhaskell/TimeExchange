@@ -253,9 +253,9 @@ export function WorldMapPanel() {
                 key={geo.rsmKey}
                 geography={geo}
                 style={{
-                  default: { fill: "#0d1e2e", stroke: "#1a3347", strokeWidth: 0.5, outline: "none" },
-                  hover:   { fill: "#0d1e2e", stroke: "#1a3347", strokeWidth: 0.5, outline: "none" },
-                  pressed: { fill: "#0d1e2e", outline: "none" },
+                  default: { fill: "#0d1e2e", stroke: "#1a3347", strokeWidth: 0.5, outline: "none", transition: "all 0.25s ease" },
+                  hover:   { fill: "#112a3e", stroke: "#2a5470", strokeWidth: 0.8, outline: "none", transition: "all 0.25s ease" },
+                  pressed: { fill: "#153350", stroke: "#2a5470", strokeWidth: 0.8, outline: "none" },
                 }}
               />
             ))

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Bookmark,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { CATEGORY_LABELS, type ExpertListing } from "@/lib/mock-data";
+import { useAuth } from "@/lib/useAuth";
 import {
   formatHourlyRate,
   getAccessModes,
@@ -25,6 +27,8 @@ interface MentorCardProps {
 }
 
 export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
+  const { user } = useAuth();
+  const router = useRouter();
   const status = getListingStatusMeta(mentor);
   const accessModes = getAccessModes(mentor);
   const categoryLabel = CATEGORY_LABELS[mentor.categoryId] ?? "Market";
@@ -222,11 +226,18 @@ export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
           <Button
             size="sm"
             className={cn(
-              "h-8 rounded-2xl px-3.5 text-xs",
+              "h-8 rounded-2xl px-3.5 text-xs transition-all duration-200 hover:scale-105 hover:shadow-lg",
               mentor.availabilityStatus === "live"
-                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
+                ? "bg-emerald-600 text-white hover:bg-emerald-500 hover:shadow-emerald-500/25"
+                : "bg-primary text-primary-foreground hover:bg-primary/80 hover:shadow-primary/20"
             )}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!user) {
+                router.push("/login?redirect=/");
+                return;
+              }
+            }}
           >
             {mentor.availabilityStatus === "live" ? "Match Live" : "Queue Forward"}
             <ArrowUpRight className="h-3.5 w-3.5" />
