@@ -2,19 +2,15 @@
 
 import { STATIC_EXPERT_LISTINGS } from "@/lib/mock-data";
 import { formatHourlyRate } from "@/lib/market-selectors";
-import { useTerminalStore } from "@/lib/terminal-store";
 import { cn } from "@/lib/utils";
 
 export function TerminalLiveTicker() {
-  const liveTick = useTerminalStore((state) => state.liveTick);
-
   const live = STATIC_EXPERT_LISTINGS.filter((e) => e.availabilityStatus === "live");
   const items = live.length > 0 ? live : STATIC_EXPERT_LISTINGS.slice(0, 8);
 
   return (
     <div
       className="relative flex h-8 items-center overflow-hidden border-t border-white/[0.04] bg-black/20"
-      data-live-tick={liveTick}
     >
       <div className="z-10 flex shrink-0 items-center gap-1.5 border-r border-white/[0.06] bg-[#080f19]/80 px-3 backdrop-blur-sm">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-live" />
@@ -25,8 +21,8 @@ export function TerminalLiveTicker() {
       <div className="absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#060d16] to-transparent" />
       <div className="flex min-w-0 flex-1 items-center overflow-hidden">
         <div
-          className="flex animate-terminal-ticker items-center"
-          style={{ animationDuration: "180s" }}
+          className="flex animate-ticker items-center"
+          style={{ animationDuration: "60s" }}
         >
           {[...items, ...items].map((expert, i) => (
             <span

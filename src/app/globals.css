@@ -191,7 +191,7 @@
 }
 
 .animate-terminal-ticker {
-  animation: ticker-scroll 180s linear infinite;
+  animation: ticker-scroll 420s linear infinite;
   will-change: transform;
 }
 
