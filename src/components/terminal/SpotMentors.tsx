@@ -9,19 +9,21 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { STATIC_EXPERT_LISTINGS, EXPERTISE_MARKETS } from "@/lib/mock-data";
+import { STATIC_EXPERT_LISTINGS, EXPERTISE_MARKETS, type ExpertListing } from "@/lib/mock-data";
 import { getListingStatusMeta } from "@/lib/market-selectors";
 import { getMentorQuality } from "@/lib/seed-market-data";
 import { useTerminalStore } from "@/lib/terminal-store";
 import { cn, getAvatarColor, getInitials } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TradeConfirmationDialog } from "./TradeConfirmationDialog";
 
 type SortKey = "price" | "rating" | "response" | "sessions";
 
 export function SpotMentors() {
   const { selectedMarket, setSelectedMarket, liveTick: _tick } = useTerminalStore();
   const [sortBy, setSortBy] = useState<SortKey>("rating");
+  const [selectedMentor, setSelectedMentor] = useState<ExpertListing | null>(null);
 
   const mentors = useMemo(() => {
     const filtered = STATIC_EXPERT_LISTINGS.filter(
@@ -215,6 +217,10 @@ export function SpotMentors() {
                     <Button
                       size="sm"
                       className="h-7 rounded-lg bg-emerald-600 px-3 text-[10px] font-semibold text-white hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMentor(mentor);
+                      }}
                     >
                       Match Now
                       <ArrowUpRight className="ml-1 h-3 w-3" />
@@ -226,6 +232,15 @@ export function SpotMentors() {
           </div>
         )}
       </div>
+
+      {/* Trade confirmation dialog */}
+      {selectedMentor && (
+        <TradeConfirmationDialog
+          mentor={selectedMentor}
+          open={!!selectedMentor}
+          onClose={() => setSelectedMentor(null)}
+        />
+      )}
     </div>
   );
 }
