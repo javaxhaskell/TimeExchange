@@ -187,7 +187,7 @@ export function CandlestickChart() {
       </div>
 
       {/* Chart */}
-      <div ref={chartRef} className="flex-1 min-h-0" />
+      <div ref={chartRef} className="relative flex-1 min-h-0" />
 
       {/* Footer stats */}
       {lastCandle && (
