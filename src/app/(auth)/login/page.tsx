@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
@@ -37,9 +37,8 @@ function LoginPageFallback() {
 }
 
 function LoginPageContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = getPostAuthRedirectPath(searchParams.get("redirect"), "/")
+  const redirectTo = getPostAuthRedirectPath(searchParams.get("redirect"), "/terminal")
   const { user, loading: authLoading } = useAuth()
 
   const [email, setEmail] = useState("")
@@ -57,10 +56,9 @@ function LoginPageContent() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace(redirectTo)
-      router.refresh()
+      window.location.assign(redirectTo)
     }
-  }, [authLoading, redirectTo, router, user])
+  }, [authLoading, redirectTo, user])
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
@@ -80,8 +78,7 @@ function LoginPageContent() {
         return
       }
 
-      router.replace(redirectTo)
-      router.refresh()
+      window.location.assign(redirectTo)
     } catch (authError) {
       setError(getAuthErrorMessage(authError))
       setLoading(false)
@@ -93,16 +90,26 @@ function LoginPageContent() {
     setOauthLoadingProvider(provider)
     try {
       const supabase = createSupabaseBrowserClient()
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: buildAuthCallbackUrl(window.location.origin, redirectTo),
+          redirectTo: buildAuthCallbackUrl(redirectTo),
+          skipBrowserRedirect: true,
         },
       })
       if (oauthError) {
         setError(getAuthErrorMessage(oauthError))
         setOauthLoadingProvider(null)
+        return
       }
+
+      if (!data?.url) {
+        setError("Unable to start this sign-in provider right now. Please try again.")
+        setOauthLoadingProvider(null)
+        return
+      }
+
+      window.location.assign(data.url)
     } catch (authError) {
       setError(getAuthErrorMessage(authError))
       setOauthLoadingProvider(null)

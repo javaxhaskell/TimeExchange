@@ -56,7 +56,7 @@ export default function UpdatePasswordPage() {
       return
     }
 
-    router.replace("/account")
+    router.replace("/terminal")
     router.refresh()
   }
 

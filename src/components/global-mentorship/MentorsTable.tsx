@@ -232,7 +232,7 @@ export function MentorsTable() {
                       }
 
                       if (!user) {
-                        router.push("/login?redirect=/");
+                        router.push("/login?redirect=/terminal/spot");
                         return;
                       }
                     }}

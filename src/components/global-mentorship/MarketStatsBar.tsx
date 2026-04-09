@@ -18,7 +18,6 @@ export function MarketStatsBar() {
     selectedExpertise,
     searchQuery,
     availabilityFilter,
-    simulationTick: _tick,
   } = useMarketStore();
 
   const filters = {

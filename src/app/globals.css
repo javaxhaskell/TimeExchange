@@ -204,3 +204,38 @@
   background: oklch(1 0 0 / 12%);
   border-radius: 999px;
 }
+
+/* Terminal-specific animations */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(133,237,181,0.1); }
+  50% { box-shadow: 0 0 20px rgba(133,237,181,0.2); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Lightweight charts container fix */
+.tv-lightweight-charts {
+  border-radius: 0 !important;
+}

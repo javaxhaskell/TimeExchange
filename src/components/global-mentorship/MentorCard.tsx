@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { CATEGORY_LABELS, type ExpertListing } from "@/lib/mock-data";
+import { useFavoritesStore } from "@/lib/favorites-store";
 import { useAuth } from "@/lib/useAuth";
 import {
   formatHourlyRate,
@@ -29,6 +30,10 @@ interface MentorCardProps {
 export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const isFavorite = useFavoritesStore((state) => state.isFavoriteMentor(mentor.id));
+  const toggleFavoriteMentor = useFavoritesStore(
+    (state) => state.toggleFavoriteMentor
+  );
   const status = getListingStatusMeta(mentor);
   const accessModes = getAccessModes(mentor);
   const categoryLabel = CATEGORY_LABELS[mentor.categoryId] ?? "Market";
@@ -219,9 +224,20 @@ export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-2xl border border-transparent opacity-0 transition-opacity group-hover:opacity-100 hover:border-border/50 hover:bg-card/60"
+            className={cn(
+              "h-8 w-8 rounded-2xl border transition-all hover:border-border/50 hover:bg-card/60",
+              isFavorite
+                ? "border-primary/20 bg-primary/10 text-primary opacity-100"
+                : "border-transparent opacity-0 group-hover:opacity-100"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavoriteMentor(mentor.id);
+            }}
           >
-            <Bookmark className="h-3.5 w-3.5" />
+            <Bookmark
+              className={cn("h-3.5 w-3.5", isFavorite && "fill-current")}
+            />
           </Button>
           <Button
             size="sm"
@@ -239,7 +255,7 @@ export function MentorCard({ mentor, compact, onSelect }: MentorCardProps) {
               }
 
               if (!user) {
-                router.push("/login?redirect=/");
+                router.push("/login?redirect=/terminal/spot");
                 return;
               }
             }}
