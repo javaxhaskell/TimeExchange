@@ -1144,6 +1144,14 @@ export const EXPERT_LISTINGS: ExpertListing[] = [
   },
 ];
 
+export const STATIC_EXPERT_LISTINGS: ExpertListing[] = EXPERT_LISTINGS.map(
+  (listing) => ({
+    ...listing,
+    languages: [...listing.languages],
+    expertise: [...listing.expertise],
+  })
+);
+
 export const ALL_LANGUAGES = Array.from(
   new Set(EXPERT_LISTINGS.flatMap((listing) => listing.languages))
 ).sort((a, b) => a.localeCompare(b));

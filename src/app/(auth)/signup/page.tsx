@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
@@ -23,9 +23,8 @@ function SignUpPageFallback() {
 }
 
 function SignUpPageContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = getPostAuthRedirectPath(searchParams.get("redirect"), "/account")
+  const redirectTo = getPostAuthRedirectPath(searchParams.get("redirect"), "/terminal")
   const { user, loading: authLoading } = useAuth()
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
@@ -38,10 +37,9 @@ function SignUpPageContent() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace(redirectTo)
-      router.refresh()
+      window.location.assign(redirectTo)
     }
-  }, [authLoading, redirectTo, router, user])
+  }, [authLoading, redirectTo, user])
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
@@ -57,7 +55,7 @@ function SignUpPageContent() {
           full_name: fullName.trim(),
           role,
         },
-        emailRedirectTo: buildAuthCallbackUrl(window.location.origin, redirectTo),
+        emailRedirectTo: buildAuthCallbackUrl(redirectTo),
       },
     })
 
@@ -68,8 +66,7 @@ function SignUpPageContent() {
     }
 
     if (data.session) {
-      router.replace(redirectTo)
-      router.refresh()
+      window.location.assign(redirectTo)
       return
     }
 

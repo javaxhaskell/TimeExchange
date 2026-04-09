@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Bell, Search, User } from "lucide-react";
+import { Activity, Search, User } from "lucide-react";
 import { useMarketStore } from "@/lib/store";
 import { useAuth } from "@/lib/useAuth";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { FavoriteMentorNotifications } from "./FavoriteMentorNotifications";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -39,13 +40,17 @@ export function TopHeader() {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-[1rem] border border-white/8 bg-white/[0.03] text-muted-foreground transition-all duration-200 hover:bg-white/[0.08] hover:text-foreground hover:border-white/15 hover:scale-105 hover:shadow-[0_0_12px_rgba(133,237,181,0.08)]"
-          >
-            <Bell className="h-4 w-4" />
-          </Button>
+          {!loading && user && (
+            <Button
+              variant="ghost"
+              className="h-10 rounded-[1rem] border border-primary/20 bg-primary/10 px-4 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary/20 hover:scale-105 hover:shadow-[0_0_14px_rgba(133,237,181,0.15)]"
+              onClick={() => router.push("/terminal")}
+            >
+              <Activity className="mr-1.5 h-4 w-4" />
+              Terminal
+            </Button>
+          )}
+          <FavoriteMentorNotifications />
           <Button
             variant="ghost"
             size="icon"
@@ -56,7 +61,7 @@ export function TopHeader() {
               }
 
               if (!user) {
-                router.push("/login?redirect=/account");
+                router.push("/login?redirect=/terminal");
                 return;
               }
 

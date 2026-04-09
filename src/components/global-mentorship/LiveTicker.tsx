@@ -11,7 +11,6 @@ export function LiveTicker() {
     selectedExpertise,
     searchQuery,
     availabilityFilter,
-    simulationTick: _tick,
   } = useMarketStore();
 
   const liveListings = getVisibleListings({

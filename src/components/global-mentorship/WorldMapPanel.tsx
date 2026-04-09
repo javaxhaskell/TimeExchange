@@ -133,7 +133,6 @@ export function WorldMapPanel() {
     selectedExpertise,
     searchQuery,
     availabilityFilter,
-    simulationTick: _tick,
   } = useMarketStore();
 
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);

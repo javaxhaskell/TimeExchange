@@ -114,10 +114,16 @@ export default async function AccountPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/"
+            href="/terminal"
             className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted/45"
           >
-            Back to marketplace
+            Back to terminal
+          </Link>
+          <Link
+            href="/discover"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted/45"
+          >
+            Open discovery
           </Link>
           <form action={signOut}>
             <button
