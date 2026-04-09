@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -41,6 +42,17 @@ export function TradeConfirmationDialog({
   const totalCost = Math.round((mentor.hourlyRate / 60) * duration * 100) / 100;
   const categoryLabel = CATEGORY_LABELS[mentor.categoryId] ?? "Market";
 
+  useEffect(() => {
+    if (typeof document === "undefined" || !open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   function handleExecute() {
     setExecuting(true);
 
@@ -71,7 +83,9 @@ export function TradeConfirmationDialog({
     onClose();
   }
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  const dialog = (
     <AnimatePresence>
       {open && (
         <>
@@ -366,4 +380,6 @@ export function TradeConfirmationDialog({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(dialog, document.body);
 }

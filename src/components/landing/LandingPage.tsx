@@ -4,8 +4,8 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Globe, TrendingUp, Zap, Shield, BarChart2,
-  Users, Clock, ChevronRight, Star, Activity, Search,
+  ArrowRight, Globe, BarChart2,
+  Users, Clock, ChevronRight, Star, Search,
 } from "lucide-react";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
@@ -44,7 +44,6 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
 function useTypewriter(text: string, speed: number = 50) {
   const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     if (currentIndex < text.length) {
@@ -54,12 +53,10 @@ function useTypewriter(text: string, speed: number = 50) {
       }, speed);
 
       return () => clearTimeout(timeout);
-    } else {
-      setIsComplete(true);
     }
   }, [currentIndex, text, speed]);
 
-  return { displayText, isComplete };
+  return { displayText, isComplete: currentIndex >= text.length };
 }
 
 // ─── Navbar ────────────────────────────────────────────────────────────────────
@@ -286,7 +283,7 @@ function Hero() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const mockupY = useTransform(scrollYProgress, [0, 1], [0, 40]);
   
-  const { displayText, isComplete } = useTypewriter("Expert time, traded like a market.", 35);
+  const { displayText } = useTypewriter("Expert time, traded like a market.", 35);
 
   const dotsLeft = [
     { x: 40, y: 100, c: 0 }, { x: 120, y: 220, c: 2 }, { x: 200, y: 340, c: 1 },

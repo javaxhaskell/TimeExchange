@@ -5,11 +5,13 @@ import { motion } from "framer-motion";
 import { BarChart3, Clock, DollarSign, TrendingUp, Users, Zap } from "lucide-react";
 import { STATIC_EXPERT_LISTINGS } from "@/lib/mock-data";
 import { getSpotOrders, getFuturesOrders, getTrades } from "@/lib/seed-market-data";
+import { useTradeStore } from "@/lib/trade-store";
 import { useTerminalStore } from "@/lib/terminal-store";
 import { cn } from "@/lib/utils";
 
 export function MarketOverviewBar() {
   const { liveTick: _tick } = useTerminalStore();
+  const executedTrades = useTradeStore((state) => state.trades);
 
   const stats = useMemo(() => {
     const liveCount = STATIC_EXPERT_LISTINGS.filter(
@@ -17,7 +19,9 @@ export function MarketOverviewBar() {
     ).length;
     const spotOpen = getSpotOrders().filter((o) => o.status === "open").length;
     const futuresOpen = getFuturesOrders().filter((o) => o.status === "open").length;
-    const trades = getTrades();
+    const trades = [...executedTrades, ...getTrades()].sort(
+      (a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime()
+    );
     const recentTrades = trades.slice(0, 10);
     const avgPrice =
       recentTrades.length > 0
@@ -72,7 +76,7 @@ export function MarketOverviewBar() {
       },
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_tick]);
+  }, [_tick, executedTrades]);
 
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#0a1018]/60 backdrop-blur-sm">

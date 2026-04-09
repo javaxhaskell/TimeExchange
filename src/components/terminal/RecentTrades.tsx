@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { STATIC_EXPERT_LISTINGS, CATEGORY_LABELS } from "@/lib/mock-data";
 import { getTrades, MARKET_REFERENCE_TIMESTAMP } from "@/lib/seed-market-data";
+import { useTradeStore } from "@/lib/trade-store";
 import { cn } from "@/lib/utils";
 
 function timeAgo(isoDate: string): string {
@@ -18,7 +19,18 @@ function timeAgo(isoDate: string): string {
 }
 
 export function RecentTrades() {
-  const trades = useMemo(() => getTrades().slice(0, 15), []);
+  const executedTrades = useTradeStore((state) => state.trades);
+
+  const trades = useMemo(
+    () =>
+      [...executedTrades, ...getTrades()]
+        .sort(
+          (a, b) =>
+            new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime()
+        )
+        .slice(0, 15),
+    [executedTrades]
+  );
 
   return (
     <div className="flex h-full flex-col rounded-2xl border border-white/[0.06] bg-[#0a1018]/80 backdrop-blur-sm">
