@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { Activity, Search, User } from "lucide-react";
+import { motion } from "framer-motion";
 import { useMarketStore } from "@/lib/store";
 import { useAuth } from "@/lib/useAuth";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { FavoriteMentorNotifications } from "./FavoriteMentorNotifications";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function TopHeader() {
   const { searchQuery, setSearchQuery } = useMarketStore();
@@ -50,26 +52,43 @@ export function TopHeader() {
               Terminal
             </Button>
           )}
-          <FavoriteMentorNotifications />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-[1rem] border border-white/8 bg-white/[0.045] text-foreground transition-all duration-200 hover:bg-white/[0.09] hover:border-primary/30 hover:scale-105 hover:shadow-[0_0_14px_rgba(133,237,181,0.12)]"
-            onClick={() => {
-              if (loading) {
-                return;
-              }
-
-              if (!user) {
-                router.push("/login?redirect=/terminal");
-                return;
-              }
-
-              router.push("/account");
-            }}
-          >
-            <User className="h-4 w-4" />
-          </Button>
+          {/* Bell only renders for confirmed authenticated users — avoids SSR/localStorage hydration mismatch */}
+          {!loading && user && <FavoriteMentorNotifications />}
+          {/* Authenticated state: only render once confirmed, fading in */}
+          {!loading && user ? (
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-[1rem] border border-white/8 bg-white/[0.045] text-foreground transition-all duration-200 hover:bg-white/[0.09] hover:border-primary/30 hover:scale-105 hover:shadow-[0_0_14px_rgba(133,237,181,0.12)]"
+                onClick={() => router.push("/account")}
+              >
+                <User className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          ) : (
+            /* Show immediately — no waiting for auth to resolve */
+            <div className="flex items-center gap-2">
+              <Link
+                href="/login"
+                className="h-10 px-4 flex items-center rounded-[1rem] border border-white/8 bg-white/[0.045] text-sm font-medium text-foreground/80 transition-all duration-200 hover:bg-white/[0.09] hover:text-foreground"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="h-10 px-4 flex items-center rounded-[1rem] text-sm font-semibold transition-all duration-200 hover:brightness-110 hover:shadow-[0_0_14px_rgba(133,237,181,0.2)]"
+                style={{ backgroundColor: "#85edb5", color: "#08111a" }}
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>
