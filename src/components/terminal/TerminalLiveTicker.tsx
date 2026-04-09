@@ -26,7 +26,7 @@ export function TerminalLiveTicker() {
       <div className="flex min-w-0 flex-1 items-center overflow-hidden">
         <div
           className="flex animate-terminal-ticker items-center"
-          style={{ animationDuration: "80s" }}
+          style={{ animationDuration: "180s" }}
         >
           {[...items, ...items].map((expert, i) => (
             <span
