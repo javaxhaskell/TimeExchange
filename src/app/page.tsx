@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { GlobalMentorshipInterface } from "@/components/global-mentorship/GlobalMentorshipInterface";
+import { LandingPage } from "@/components/landing/LandingPage";
 import { AuthenticatedHomeRedirect } from "@/components/auth/AuthenticatedHomeRedirect";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -67,7 +67,7 @@ export default async function Home({
   return (
     <>
       <AuthenticatedHomeRedirect />
-      <GlobalMentorshipInterface />
+      <LandingPage />
     </>
   );
 }
