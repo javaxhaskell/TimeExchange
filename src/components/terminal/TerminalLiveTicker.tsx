@@ -24,7 +24,7 @@ export function TerminalLiveTicker() {
       </div>
       <div className="absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#060d16] to-transparent" />
       <div className="flex min-w-0 flex-1 items-center overflow-hidden">
-        <div className="flex animate-ticker items-center">
+        <div className="flex animate-terminal-ticker items-center">
           {[...items, ...items].map((expert, i) => (
             <span
               key={`${expert.id}-${i}`}
