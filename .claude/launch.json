@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "time-exchange",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3001
+      "runtimeExecutable": "/opt/homebrew/Cellar/node/25.2.1/bin/node",
+      "runtimeArgs": ["node_modules/.bin/next", "dev", "--port", "3001", "--webpack"],
+      "port": 3001,
+      "cwd": "/Users/arhamshuaib/Desktop/Mentoring Platform/time-exchange"
     }
   ]
 }
